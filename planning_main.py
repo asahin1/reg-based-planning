@@ -15,6 +15,7 @@ from object_definitions import get_OBJ
 from object_geom_func import generate_map, translate_point, rotate_vector, place_finger, pivot_finger, get_finger_param, find_contact_center
 from object_surf_func import plot_3d_object, get_neighbors, unfold_surface, unfold_object
 from finger_params import*
+from experiments import get_experimental_setup
 
 def solve_t1_slide_left(variables, coords):
     solt2 = variables[0]
@@ -117,12 +118,12 @@ def theta_conversion(left, right, action_name):
     
     # Object size is used
     elif (action_name=="Rotate ccw"):
-        solution= np.arccos((((right_position)**2 + OBJECT_WIDTH**2 - PALM_WIDTH**2 - 
+        solution= np.pi - np.arccos((((right_position)**2 + OBJECT_WIDTH**2 - PALM_WIDTH**2 - 
                                       (left_position)**2)/(2*PALM_WIDTH*(left_position))))
         return (solution)
 
     elif (action_name=="Rotate cw"):
-        solution= np.pi - np.arccos(((left_position)**2 + OBJECT_WIDTH**2 - 
+        solution= np.arccos(((left_position)**2 + OBJECT_WIDTH**2 - 
                              (right_position)**2 - PALM_WIDTH**2)/(2*PALM_WIDTH*(right_position)))
         return (solution)
 
@@ -361,258 +362,268 @@ class Node:
                        "Rotate ccw","Rotate cw","Move down","Move up","Pivot"]
         
         self.available_actions = list()
-        for action in action_list:
-            if action == "Slide left down":
-                d_l = self.finger_l[0] - resolution
-                d_r = self.finger_r[0]
-                if d_l > FINGER_END or d_l < FINGER_START:
-                    continue
-                else:
-                    sol=theta_conversion(d_l, d_r, action)
-                    OBJECT_LENGTH = self.objleft_l
-                    GAMMA = self.angle_ccw_l
-                    TH2_MAX = calculate_th2(TH1_MAX, d_l)
-                    OBJECT_LENGTH = self.objright_l
-                    GAMMA = self.angle_cw_l
-                    TH1_MIN = calculate_th1(TH2_MIN, d_r)
-                    th1=sol[0]
-                    th2 = sol[1]
-                    if th1==None or th2==None:
-                        continue
-                    else:
-                        if(th1<=TH1_MAX and th1>=TH1_MIN and th2>=TH2_MIN and th2<=TH2_MAX):
-                            pass
-                        else:
-                            continue
-                    self.available_actions.append(action)
-            elif action == "Slide left up":
-                d_l = self.finger_l[0] + resolution
-                d_r = self.finger_r[0]
-                if d_l > FINGER_END or d_l < FINGER_START:
-                    continue
-                else:
-                    sol=theta_conversion(d_l, d_r, action)
-                    OBJECT_LENGTH = self.objleft_l
-                    GAMMA = self.angle_ccw_l
-                    TH2_MAX = calculate_th2(TH1_MAX, d_l)
-                    OBJECT_LENGTH = self.objright_l
-                    GAMMA = self.angle_cw_l
-                    TH1_MIN = calculate_th1(TH2_MIN, d_r)
-                    th1=sol[0]
-                    th2 = sol[1]
-                    if th1==None or th2==None:
-                        continue
-                    else:
-                        if(th1<=TH1_MAX and th1>=TH1_MIN and th2>=TH2_MIN and th2<=TH2_MAX):
-                            pass
-                        else:
-                            continue
-                    self.available_actions.append(action)
-            elif action == "Slide right down":
-                d_r = self.finger_r[0] - resolution
-                d_l = self.finger_l[0]
-                if d_r > FINGER_END or d_r < FINGER_START:
-                    continue
-                else:
-                    sol=theta_conversion(d_l, d_r, action)
-                    OBJECT_LENGTH = self.objleft_l
-                    GAMMA = self.angle_ccw_l
-                    TH2_MAX = calculate_th2(TH1_MAX, d_l)
-                    OBJECT_LENGTH = self.objright_l
-                    GAMMA = self.angle_cw_l
-                    TH1_MIN = calculate_th1(TH2_MIN, d_r)
-                    th1=sol[0]
-                    th2 = sol[1]
-                    if th1==None or th2==None:
-                        continue
-                    else:
-                        if(th1<=TH1_MAX and th1>=TH1_MIN and th2>=TH2_MIN and th2<=TH2_MAX):
-                            pass
-                        else:
-                            continue
-                    self.available_actions.append(action)
-            elif action == "Slide right up":
-                d_r = self.finger_r[0] + resolution
-                d_l = self.finger_l[0]
-                if d_r > FINGER_END or d_r < FINGER_START:
-                    continue
-                else:
-                    sol=theta_conversion(d_l, d_r, action)
-                    OBJECT_LENGTH = self.objleft_l
-                    GAMMA = self.angle_ccw_l
-                    TH2_MAX = calculate_th2(TH1_MAX, d_l)
-                    OBJECT_LENGTH = self.objright_l
-                    GAMMA = self.angle_cw_l
-                    TH1_MIN = calculate_th1(TH2_MIN, d_r)
-                    th1=sol[0]
-                    th2 = sol[1]
-                    if th1==None or th2==None:
-                        continue
-                    else:
-                        if(th1<=TH1_MAX and th1>=TH1_MIN and th2>=TH2_MIN and th2<=TH2_MAX):
-                            pass
-                        else:
-                            continue
-                    self.available_actions.append(action)
-            elif action == "Rotate ccw":
-#                 if self.angle_ccw_l!=self.angle_ccw_r:
-#                     print("Different angles")
-#                     print(self.angle_ccw_l,self.angle_ccw_r)
+        
 
-                rot_angle = self.angle_ccw_l
-#                 print(rot_angle)
-                axis_l = self.finger_l[3].cross(self.finger_l[2])
-                normal_l = rotate_vector(self.finger_l[2],axis_l,-rot_angle,)
-                distal_l = rotate_vector(self.finger_l[3],axis_l,-rot_angle)
-                axis_r = self.finger_r[3].cross(self.finger_r[2])
-                normal_r = rotate_vector(self.finger_r[2],axis_r,rot_angle)
-                distal_r = rotate_vector(self.finger_r[3],axis_r,rot_angle)
-                for surf in OBJ:
-#                     print(square[surf][1].angle(normal_l))
-                    if OBJ[surf][1].angle(normal_l)<1e-3:
-                        surf_l = surf
-                        break
-                for surf in OBJ:
-                    if OBJ[surf][1].angle(normal_r)<1e-3:
-                        surf_r = surf
-                        break
-                for point in OBJ[surf_l][0].points:
-                    for other_point in OBJ[surf_l][0].points:
-                        if point==other_point:
-                            continue
-                        else:
-                            edge = Vector(point,other_point)
-                            angle = edge.angle(distal_l)
-                            if angle<1e-3:
-                                length_l = edge.length()
-                for point in OBJ[surf_r][0].points:
-                    for other_point in OBJ[surf_r][0].points:
-                        if point==other_point:
-                            continue
-                        else:
-                            edge = Vector(point,other_point)
-                            angle = edge.angle(distal_r)
-                            if angle<1e-3:
-                                length_r = edge.length()
-                d_l = self.finger_l[0] + length_l
-                d_r = self.finger_r[0] - length_r
-                if d_r > FINGER_END or d_r < FINGER_START or d_l > FINGER_END or d_l < FINGER_START:
-                    continue
-                else:
-#                     th1=theta_conversion(self.finger_l[0], self.finger_r[0], action)
-                    th1=theta_conversion(d_l, d_r, action)
-#                     th2=calculate_th2(th1,self.finger_l[0])
-                    OBJECT_LENGTH = self.objleft_l
-                    GAMMA = self.angle_ccw_l
-                    th2=calculate_th2(th1,d_l)
-                    OBJECT_LENGTH = self.objleft_l
-                    GAMMA = self.angle_ccw_l
-                    TH2_MAX=calculate_th2(TH1_MAX,self.finger_l[0])
-                    OBJECT_LENGTH = self.objright_l
-                    GAMMA = self.angle_cw_l
-                    TH1_MIN=calculate_th1(TH2_MIN,self.finger_r[0])
-                    if th1==None or th2==None:
+        if self.action is not None and self.action == "Pivot":
+            pass
+        else:
+            for action in action_list:
+
+                if action == "Slide left down":
+                    d_l = self.finger_l[0] - resolution
+                    d_r = self.finger_r[0]
+                    if d_l > FINGER_END or d_l < FINGER_START:
                         continue
                     else:
-                        if(th1<=TH1_MAX and th1>=TH1_MIN and th2>=TH2_MIN and th2<=TH2_MAX):
-                            pass
-                        else:
-                            continue
-                    self.available_actions.append(action)
-            elif action == "Rotate cw":
-#                 if self.angle_cw_l!=self.angle_cw_r:
-#                     print("Different angles")
-#                     print(self.angle_cw_l,self.angle_cw_r)
-                rot_angle = self.angle_cw_l
-                axis_l = self.finger_l[3].cross(self.finger_l[2])
-                normal_l = rotate_vector(self.finger_l[2],axis_l,rot_angle)
-                distal_l = rotate_vector(self.finger_l[3],axis_l,rot_angle)
-                axis_r = self.finger_r[3].cross(self.finger_r[2])
-                normal_r = rotate_vector(self.finger_r[2],axis_r,-rot_angle)
-                distal_r = rotate_vector(self.finger_r[3],axis_r,-rot_angle)
-                for surf in OBJ:
-                    if OBJ[surf][1].angle(normal_l)<1e-3:
-                        surf_l = surf
-                        break
-                for surf in OBJ:
-                    if OBJ[surf][1].angle(normal_r)<1e-3:
-                        surf_r = surf
-                        break
-                for point in OBJ[surf_l][0].points:
-                    for other_point in OBJ[surf_l][0].points:
-                        if point==other_point:
+                        sol=theta_conversion(d_l, d_r, action)
+                        OBJECT_LENGTH = self.objleft_l
+                        GAMMA = self.angle_ccw_l
+                        TH2_MAX = calculate_th2(TH1_MAX, d_l)
+                        OBJECT_LENGTH = self.objright_l
+                        GAMMA = self.angle_cw_l
+                        TH1_MIN = calculate_th1(TH2_MIN, d_r)
+                        th1=sol[0]
+                        th2 = sol[1]
+                        if th1==None or th2==None:
                             continue
                         else:
-                            edge = Vector(point,other_point)
-                            angle = edge.angle(distal_l)
-                            if angle <1e-3:
-                                length_l = edge.length()
-                for point in OBJ[surf_r][0].points:
-                    for other_point in OBJ[surf_r][0].points:
-                        if point==other_point:
-                            continue
-                        else:
-                            edge = Vector(point,other_point)
-                            angle = edge.angle(distal_r)
-                            if angle <1e-3:
-                                length_r = edge.length()
-                d_l = self.finger_l[0] - length_l
-                d_r = self.finger_r[0] + length_r
-                if d_r > FINGER_END or d_r < FINGER_START or d_l > FINGER_END or d_l < FINGER_START:
-                    continue
-                else:
-#                     th2=theta_conversion(self.finger_l[0], self.finger_r[0], action)
-                    th2=theta_conversion(d_l, d_r, action)
-#                     th1 = calculate_th1(th2, self.finger_r[0])
-                    OBJECT_LENGTH = self.objright_l
-                    GAMMA = self.angle_cw_l
-                    th1 = calculate_th1(th2, d_r)
-                    OBJECT_LENGTH = self.objleft_l
-                    GAMMA = self.angle_ccw_l
-                    TH2_MAX = calculate_th2( TH1_MAX,self.finger_l[0])
-                    OBJECT_LENGTH = self.objright_l
-                    GAMMA = self.angle_cw_l
-                    TH1_MIN = calculate_th1(TH2_MIN,self.finger_r[0])
-                    if th1==None or th2==None:
+                            if(th1<=TH1_MAX and th1>=TH1_MIN and th2>=TH2_MIN and th2<=TH2_MAX):
+                                pass
+                            else:
+                                continue
+                        self.available_actions.append(action)
+                elif action == "Slide left up":
+                    d_l = self.finger_l[0] + resolution
+                    d_r = self.finger_r[0]
+                    if d_l > FINGER_END or d_l < FINGER_START:
                         continue
                     else:
-                        if(th1<=TH1_MAX and th1>=TH1_MIN and th2>=TH2_MIN and th2<=TH2_MAX):
-                            pass
-                        else:
+                        sol=theta_conversion(d_l, d_r, action)
+                        OBJECT_LENGTH = self.objleft_l
+                        GAMMA = self.angle_ccw_l
+                        TH2_MAX = calculate_th2(TH1_MAX, d_l)
+                        OBJECT_LENGTH = self.objright_l
+                        GAMMA = self.angle_cw_l
+                        TH1_MIN = calculate_th1(TH2_MIN, d_r)
+                        th1=sol[0]
+                        th2 = sol[1]
+                        if th1==None or th2==None:
                             continue
-                    self.available_actions.append(action)
-            elif action == "Move down":
-                z = self.finger_l[1] - resolution
-                # if z > self.obj_h/2 - finger_h/2 or z < -self.obj_h/2 + finger_h/2:
-                if z > self.obj_h/2 or z < -self.obj_h/2:
-                    continue
-                else:
-                    self.available_actions.append(action)
-            elif action == "Move up":
-                z = self.finger_l[1] + resolution
-                # if z > self.obj_h/2 - finger_h/2 or z < -self.obj_h/2 + finger_h/2:
-                if z > self.obj_h/2 or z < -self.obj_h/2:
-                    continue
-                else:
-                    self.available_actions.append(action)
-            elif action == "Pivot":
-                pivot_angle = self.pivot_angle
-                left_center = find_contact_center(self.finger_l_poly,self.finger_l[2],self.finger_l[3],OBJ[self.surf_l][0],self.finger_l[0],self.finger_l[1],self.objleft_l)
-                right_center = find_contact_center(self.finger_r_poly,self.finger_r[2],self.finger_r[3],OBJ[self.surf_r][0],self.finger_r[0],self.finger_r[1],self.objright_l)
-#                 print("real, calc left:",(self.c_l.center_point,left_center))
-#                 print("real, calc right:",(self.c_r.center_point,right_center))
-                finger_poly_left = pivot_finger(pivot_angle,self.finger_l_poly,self.finger_l[2],left_center,self.finger_l[3])
-                finger_poly_right = pivot_finger(-pivot_angle,self.finger_r_poly,self.finger_r[2],right_center,self.finger_r[3])
-                d_l,z = get_finger_param(finger_poly_left,OBJ)
-                d_r,z = get_finger_param(finger_poly_right,OBJ)
-                # if z > self.obj_h/2 - finger_h/2 or z < -self.obj_h/2 + finger_h/2 or d_r > FINGER_END or d_r < FINGER_START or d_l > FINGER_END or d_l < FINGER_START:
-                # if z > self.obj_h/2 or z < -self.obj_h/2 or d_r > FINGER_END or d_r < FINGER_START or d_l > FINGER_END or d_l < FINGER_START:
-                new_obj_h = self.objleft_l
-                new_obj_l = self.objleft_h
-                if z > new_obj_h/2 or z < -new_obj_h/2 or d_r > FINGER_END or d_r < FINGER_START or d_l > FINGER_END or d_l < FINGER_START or d_l+new_obj_l<finger_w or d_r+new_obj_l<finger_w:
-                    continue
-                else:
-                    self.available_actions.append(action)
+                        else:
+                            if(th1<=TH1_MAX and th1>=TH1_MIN and th2>=TH2_MIN and th2<=TH2_MAX):
+                                pass
+                            else:
+                                continue
+                        self.available_actions.append(action)
+                elif action == "Slide right down":
+                    d_r = self.finger_r[0] - resolution
+                    d_l = self.finger_l[0]
+                    if d_r > FINGER_END or d_r < FINGER_START:
+                        continue
+                    else:
+                        sol=theta_conversion(d_l, d_r, action)
+                        OBJECT_LENGTH = self.objleft_l
+                        GAMMA = self.angle_ccw_l
+                        TH2_MAX = calculate_th2(TH1_MAX, d_l)
+                        OBJECT_LENGTH = self.objright_l
+                        GAMMA = self.angle_cw_l
+                        TH1_MIN = calculate_th1(TH2_MIN, d_r)
+                        th1=sol[0]
+                        th2 = sol[1]
+                        if th1==None or th2==None:
+                            continue
+                        else:
+                            if(th1<=TH1_MAX and th1>=TH1_MIN and th2>=TH2_MIN and th2<=TH2_MAX):
+                                pass
+                            else:
+                                continue
+                        self.available_actions.append(action)
+                elif action == "Slide right up":
+                    d_r = self.finger_r[0] + resolution
+                    d_l = self.finger_l[0]
+                    if d_r > FINGER_END or d_r < FINGER_START:
+                        continue
+                    else:
+                        sol=theta_conversion(d_l, d_r, action)
+                        OBJECT_LENGTH = self.objleft_l
+                        GAMMA = self.angle_ccw_l
+                        TH2_MAX = calculate_th2(TH1_MAX, d_l)
+                        OBJECT_LENGTH = self.objright_l
+                        GAMMA = self.angle_cw_l
+                        TH1_MIN = calculate_th1(TH2_MIN, d_r)
+                        th1=sol[0]
+                        th2 = sol[1]
+                        if th1==None or th2==None:
+                            continue
+                        else:
+                            if(th1<=TH1_MAX and th1>=TH1_MIN and th2>=TH2_MIN and th2<=TH2_MAX):
+                                pass
+                            else:
+                                continue
+                        self.available_actions.append(action)
+                elif action == "Rotate ccw":
+    #                 if self.angle_ccw_l!=self.angle_ccw_r:
+    #                     print("Different angles")
+    #                     print(self.angle_ccw_l,self.angle_ccw_r)
+
+                    rot_angle = self.angle_ccw_l
+    #                 print(rot_angle)
+                    axis_l = self.finger_l[3].cross(self.finger_l[2])
+                    normal_l = rotate_vector(self.finger_l[2],axis_l,-rot_angle,)
+                    distal_l = rotate_vector(self.finger_l[3],axis_l,-rot_angle)
+                    axis_r = self.finger_r[3].cross(self.finger_r[2])
+                    normal_r = rotate_vector(self.finger_r[2],axis_r,rot_angle)
+                    distal_r = rotate_vector(self.finger_r[3],axis_r,rot_angle)
+                    for surf in OBJ:
+    #                     print(square[surf][1].angle(normal_l))
+                        if OBJ[surf][1].angle(normal_l)<1e-3:
+                            surf_l = surf
+                            break
+                    for surf in OBJ:
+                        if OBJ[surf][1].angle(normal_r)<1e-3:
+                            surf_r = surf
+                            break
+                    for point in OBJ[surf_l][0].points:
+                        for other_point in OBJ[surf_l][0].points:
+                            if point==other_point:
+                                continue
+                            else:
+                                edge = Vector(point,other_point)
+                                angle = edge.angle(distal_l)
+                                if angle<1e-3:
+                                    length_l = edge.length()
+                    for point in OBJ[surf_r][0].points:
+                        for other_point in OBJ[surf_r][0].points:
+                            if point==other_point:
+                                continue
+                            else:
+                                edge = Vector(point,other_point)
+                                angle = edge.angle(distal_r)
+                                if angle<1e-3:
+                                    length_r = edge.length()
+                    d_l = self.finger_l[0] + length_l
+                    d_r = self.finger_r[0] - length_r
+                    if d_r > FINGER_END or d_r < FINGER_START or d_l > FINGER_END or d_l < FINGER_START:
+                        continue
+                    else:
+    #                     th1=theta_conversion(self.finger_l[0], self.finger_r[0], action)
+                        th1=theta_conversion(d_l, d_r, action)
+    #                     th2=calculate_th2(th1,self.finger_l[0])
+                        OBJECT_LENGTH = self.objleft_l
+                        GAMMA = self.angle_ccw_l
+                        th2=calculate_th2(th1,d_l)
+                        OBJECT_LENGTH = self.objleft_l
+                        GAMMA = self.angle_ccw_l
+                        TH2_MAX=calculate_th2(TH1_MAX,self.finger_l[0])
+                        OBJECT_LENGTH = self.objright_l
+                        GAMMA = self.angle_cw_l
+                        TH1_MIN=calculate_th1(TH2_MIN,self.finger_r[0])
+                        if th1==None or th2==None:
+                            continue
+                        else:
+                            if(th1<=TH1_MAX and th1>=TH1_MIN and th2>=TH2_MIN and th2<=TH2_MAX):
+                                pass
+                            else:
+                                continue
+                        self.available_actions.append(action)
+                elif action == "Rotate cw":
+    #                 if self.angle_cw_l!=self.angle_cw_r:
+    #                     print("Different angles")
+    #                     print(self.angle_cw_l,self.angle_cw_r)
+                    rot_angle = self.angle_cw_l
+                    axis_l = self.finger_l[3].cross(self.finger_l[2])
+                    normal_l = rotate_vector(self.finger_l[2],axis_l,rot_angle)
+                    distal_l = rotate_vector(self.finger_l[3],axis_l,rot_angle)
+                    axis_r = self.finger_r[3].cross(self.finger_r[2])
+                    normal_r = rotate_vector(self.finger_r[2],axis_r,-rot_angle)
+                    distal_r = rotate_vector(self.finger_r[3],axis_r,-rot_angle)
+                    for surf in OBJ:
+                        if OBJ[surf][1].angle(normal_l)<1e-3:
+                            surf_l = surf
+                            break
+                    for surf in OBJ:
+                        if OBJ[surf][1].angle(normal_r)<1e-3:
+                            surf_r = surf
+                            break
+                    for point in OBJ[surf_l][0].points:
+                        for other_point in OBJ[surf_l][0].points:
+                            if point==other_point:
+                                continue
+                            else:
+                                edge = Vector(point,other_point)
+                                angle = edge.angle(distal_l)
+                                if angle <1e-3:
+                                    length_l = edge.length()
+                    for point in OBJ[surf_r][0].points:
+                        for other_point in OBJ[surf_r][0].points:
+                            if point==other_point:
+                                continue
+                            else:
+                                edge = Vector(point,other_point)
+                                angle = edge.angle(distal_r)
+                                if angle <1e-3:
+                                    length_r = edge.length()
+                    d_l = self.finger_l[0] - length_l
+                    d_r = self.finger_r[0] + length_r
+                    if d_r > FINGER_END or d_r < FINGER_START or d_l > FINGER_END or d_l < FINGER_START:
+                        continue
+                    else:
+    #                     th2=theta_conversion(self.finger_l[0], self.finger_r[0], action)
+                        th2=theta_conversion(d_l, d_r, action)
+    #                     th1 = calculate_th1(th2, self.finger_r[0])
+                        OBJECT_LENGTH = self.objright_l
+                        GAMMA = self.angle_cw_l
+                        th1 = calculate_th1(th2, d_r)
+                        OBJECT_LENGTH = self.objleft_l
+                        GAMMA = self.angle_ccw_l
+                        TH2_MAX = calculate_th2( TH1_MAX,self.finger_l[0])
+                        OBJECT_LENGTH = self.objright_l
+                        GAMMA = self.angle_cw_l
+                        TH1_MIN = calculate_th1(TH2_MIN,self.finger_r[0])
+                        if th1==None or th2==None:
+                            continue
+                        else:
+                            if(th1<=TH1_MAX and th1>=TH1_MIN and th2>=TH2_MIN and th2<=TH2_MAX):
+                                pass
+                            else:
+                                continue
+                        self.available_actions.append(action)
+                elif action == "Move down":
+                    z = self.finger_l[1] - resolution
+                    # if z > self.obj_h/2 - finger_h/2 or z < -self.obj_h/2 + finger_h/2:
+                    # if z > self.obj_h/2 or z < 4-self.obj_h/2:
+                    if z > self.obj_h/2 - finger_h/2 or z < 4-self.obj_h/2:
+                        continue
+                    else:
+                        self.available_actions.append(action)
+                elif action == "Move up":
+                    z = self.finger_l[1] + resolution
+                    # if z > self.obj_h/2 - finger_h/2 or z < -self.obj_h/2 + finger_h/2:
+                    # if z > self.obj_h/2 or z < -self.obj_h/2:
+                    if z > self.obj_h/2 - finger_h/2 or z < 4-self.obj_h/2:
+                        continue
+                    else:
+                        self.available_actions.append(action)
+                elif action == "Pivot":
+                    if z < 6-self.obj_h/2:
+                        continue
+                    pivot_angle = self.pivot_angle
+                    left_center = find_contact_center(self.finger_l_poly,self.finger_l[2],self.finger_l[3],OBJ[self.surf_l][0],self.finger_l[0],self.finger_l[1],self.objleft_l)
+                    right_center = find_contact_center(self.finger_r_poly,self.finger_r[2],self.finger_r[3],OBJ[self.surf_r][0],self.finger_r[0],self.finger_r[1],self.objright_l)
+    #                 print("real, calc left:",(self.c_l.center_point,left_center))
+    #                 print("real, calc right:",(self.c_r.center_point,right_center))
+                    finger_poly_left = pivot_finger(pivot_angle,self.finger_l_poly,self.finger_l[2],left_center,self.finger_l[3])
+                    finger_poly_right = pivot_finger(-pivot_angle,self.finger_r_poly,self.finger_r[2],right_center,self.finger_r[3])
+                    d_l,z = get_finger_param(finger_poly_left,OBJ)
+                    d_r,z = get_finger_param(finger_poly_right,OBJ)
+                    # if z > self.obj_h/2 - finger_h/2 or z < -self.obj_h/2 + finger_h/2 or d_r > FINGER_END or d_r < FINGER_START or d_l > FINGER_END or d_l < FINGER_START:
+                    # if z > self.obj_h/2 or z < -self.obj_h/2 or d_r > FINGER_END or d_r < FINGER_START or d_l > FINGER_END or d_l < FINGER_START:
+                    new_obj_h = self.objleft_l
+                    new_obj_l = self.objleft_h
+                    if z > new_obj_h/2 or z < -new_obj_h/2 or d_r > FINGER_END or d_r < FINGER_START or d_l > FINGER_END or d_l < FINGER_START or d_l+new_obj_l<finger_w or d_r+new_obj_l<finger_w:
+                        continue
+                    else:
+                        self.available_actions.append(action)
                 
         if(self.action=="Slide left down"):
             (self.theta)= theta_conversion(self.finger_l[0], self.finger_r[0], self.action)
@@ -975,7 +986,7 @@ def search(start_node,cost_list):
             if child.action == current_node.action:
                 child.h *= 0.7 #My beta: 0.5 Joshua's beta: 0.7
 
-            child.f = child.g + child.h*50 #My epsilon: 5 Joshua's epsilon: 2
+            child.f = child.g + child.h*100 #My epsilon: 5 Joshua's epsilon: 2
 
 
             if len([i[1] for i in yet_to_visit_list.queue if child == i[1] and
@@ -1003,37 +1014,44 @@ def return_path(current_node):
 
 
 if __name__=="__main__":
-    # OBJ = rectangular_prism
-    # OBJ = get_OBJ("square_prism",1)
-    # OBJ = get_OBJ("rectangular_prism",1)
-    OBJ = get_OBJ("rectangular_prism_curved",1)
-    # OBJ = get_OBJ("rectangular_prism_curved",1)
-    # plot_3d_object(OBJ)
+
+    obj_name = "square_prism"
+    exp_no = 4
+    obj_type, goal_no, z, d_l, d_r, normal_l, distal_l, normal_r, distal_r = get_experimental_setup(obj_name,exp_no)
+    OBJ = get_OBJ(obj_type,goal_no)
     OBJ_neighbors = get_neighbors(OBJ)
-
+    # print(OBJ_neighbors)
     costs = {"Slide left down":1, "Slide left up":1, "Slide right down":1, "Slide right up":1,
-     "Rotate ccw":1, "Rotate cw":1, "Move up":5, "Move down": 5, "Pivot":20}
+     "Rotate ccw":3, "Rotate cw":3, "Move up":10, "Move down": 10, "Pivot":25}
 
-    z = 0
-    d_l = 10
-    normal_l = Vector(0,-1,0)
-    distal_l = Vector(-1,0,0)
-    # normal_l = Vector(-1,0,0)
-    # distal_l = Vector(0,1,0)
-    d_r = 10
-    normal_r = Vector(0,1,0)
-    distal_r = Vector(-1,0,0)
-    # normal_r = Vector(1,0,0)
-    # distal_r = Vector(0,1,0)
+    print("z=",z)
+    print("dl=",d_l)
+    print("dr=",d_r)
+    
+    # z=0
+    # d_l=8
+    # d_r=11.5
+    # normal_l=Vector(0,1,0)
+    # distal_l=Vector(1,0,0)
+    # normal_r=Vector(0,-1,0)
+    # distal_r=Vector(1,0,0)
+    
+    # normal_l=Vector(1,0,0)
+    # distal_l=Vector(0,0,-1)
+    # normal_r=Vector(-1,0,0)
+    # distal_r=Vector(0,0,-1)
+
     finger_l = (d_l,z,normal_l,distal_l)
     finger_r = (d_r,z,normal_r,distal_r)
 
     ex = Node(finger_l,finger_r)
     print(ex.available_actions)
     ex.plot_state()
+
+
     path, actions, dt = search(ex,costs)
 
-    file_path = "run_" + datetime.datetime.now().strftime('%Y-%m-%d_%H-%M')
+    file_path = obj_type + "_" + str(exp_no) + "_" + datetime.datetime.now().strftime('%Y-%m-%d_%H-%M')
     os.mkdir(file_path)
     # param_file = open(file_path+"/Test_details.txt","w")
     # data_name = ["Palm width","Finger width","Finger length","Finger height","Object dimensions","Finger end","Finger start",
